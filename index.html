@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management · SQL Demo</title>
+    <!-- Font Awesome for icons (optional) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f6f9fc 0%, #e9f2f9 100%);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #1e2b3c;
+        }
+
+        .container {
+            max-width: 1300px;
+            width: 100%;
+        }
+
+        /* header */
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            padding: 1.2rem 2rem;
+            border-radius: 2.5rem;
+            box-shadow: 0 15px 30px -10px rgba(0, 40, 80, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .title-section h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #0b2b4e, #1c4b6e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .title-section i {
+            color: #1e5b8c;
+            font-size: 2rem;
+            background: #ffffffc0;
+            padding: 10px;
+            border-radius: 18px;
+            box-shadow: 0 6px 14px rgba(0, 60, 100, 0.1);
+        }
+
+        .badge {
+            background: #1a4972;
+            color: white;
+            border-radius: 40px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+            box-shadow: 0 8px 18px -6px #1e4b71;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge i {
+            font-size: 1rem;
+        }
+
+        /* card style */
+        .card {
+            background: #ffffffd9;
+            backdrop-filter: blur(4px);
+            border-radius: 32px;
+            padding: 1.8rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px -15px rgba(0, 35, 70, 0.2);
+            border: 1px solid #ffffffb0;
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.002);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #cbdbe9;
+            padding-bottom: 0.75rem;
+        }
+
+        .card-header i {
+            font-size: 1.7rem;
+            color: #1f5e92;
+            background: #e1effa;
+            padding: 8px;
+            border-radius: 16px;
+        }
+
+        .card-header h2 {
+            font-weight: 600;
+            font-size: 1.5rem;
+            color: #113250;
+            letter-spacing: -0.02em;
+        }
+
+        .query-block {
+            background: #0e1e2e;
+            border-radius: 18px;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0 1.4rem 0;
+            color: #c9e2ff;
+            font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace;
+            font-size: 0.95rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            box-shadow: inset 0 0 0 1px #2e4a64, 0 6px 14px #0000001a;
+            border-left: 6px solid #3e95d6;
+        }
+
+        .query-block i {
+            color: #74b9ff;
+            margin-right: 8px;
+        }
+
+        /* table styling */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 20px;
+            background: white;
+            box-shadow: 0 8px 20px -8px #1e3b5580;
+            margin: 1.2rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            min-width: 500px;
+        }
+
+        th {
+            background: #e5f0fa;
+            color: #0f3b5e;
+            font-weight: 600;
+            padding: 1rem 1.2rem;
+            text-align: left;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            border-bottom: 2px solid #b6d0e8;
+        }
+
+        td {
+            padding: 0.85rem 1.2rem;
+            border-bottom: 1px solid #d6e3f0;
+            color: #1c3d5e;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: #f0f7ff;
+        }
+
+        .highlight {
+            background: #fff3cf;
+            font-weight: 600;
+            color: #0c2f4e;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.2rem;
+            margin: 1.5rem 0 0.8rem;
+        }
+
+        .stat-item {
+            background: #eef6ff;
+            border-radius: 22px;
+            padding: 1.2rem 1.5rem;
+            box-shadow: 0 6px 12px -6px #a5c0da;
+            border: 1px solid #c8def2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #476b8c;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #0a2e4a;
+            line-height: 1.2;
+        }
+
+        .stat-value small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #436b8f;
+            margin-left: 6px;
+        }
+
+        .dept-badge {
+            display: inline-block;
+            background: #cfe2f5;
+            border-radius: 30px;
+            padding: 0.25rem 1rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #13426b;
+            margin-right: 0.4rem;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #567a9a;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-note i {
+            margin-right: 5px;
+            color: #2f6f9f;
+        }
+
+        /* small responsive */
+        @media (max-width: 650px) {
+            body {
+                padding: 1.2rem 0.8rem;
+            }
+            .header {
+                flex-direction: column;
+                align-items: start;
+                gap: 0.8rem;
+                padding: 1.2rem;
+            }
+            .title-section h1 {
+                font-size: 1.7rem;
+            }
+            .card {
+                padding: 1.2rem;
+            }
+            .stat-value {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="title-section">
+                <h1>
+                    <i class="fas fa-database"></i> 
+                    student_management
+                </h1>
+            </div>
+            <div class="badge">
+                <i class="fas fa-graduation-cap"></i> 
+                SQL Demo · Live Results
+            </div>
+        </div>
+
+        <!-- 1. Initial students table -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-users"></i>
+                <h2>1. All students (after insert)</h2>
+            </div>
+            <div class="query-block">
+                <i class="fas fa-terminal"></i> SELECT * FROM student_management.students;
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>id</th>
+                            <th>studentname</th>
+                            <th>department</th>
+                            <th>semester</th>
+                            <th>marks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>Anika</td><td>CSE</td><td>4</td><td>87</td></tr>
+                        <tr><td>2</td><td>Rafi</td><td>CSE</td><td>1</td><td>72</td></tr>
+                        <tr><td>3</td><td>Tasnim</td><td>EEE</td><td>3</td><td>90</td></tr>
+                        <tr><td>4</td><td>Imran</td><td>CSE</td><td>4</td><td>83</td></tr>
+                        <tr><td>5</td><td>Lamia</td><td>BBA</td><td>2</td><td>79</td></tr>
+                        <tr><td>6</td><td>Shuvo</td><td>CSE</td><td>1</td><td>92</td></tr>
+                        <tr><td>7</td><td>Mehzabin</td><td>EEE</td><td>4</td><td>68</td></tr>
+                        <tr><td>8</td><td>Karim</td><td>BBA</td><td>3</td><td>85</td></tr>
+                        <tr><td>9</td><td>Priya</td><td>CSE</td><td>6</td><td>96</td></tr>
+                        <tr><td>10</td><td>Sohan</td><td>EEE</td><td>1</td><td>74</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. Select Anika + Update + Delete sequence -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-search"></i>
+                <h2>2. Query & updates</h2>
+            </div>
+            
+            <div class="query-block">
+                <i class="fas fa-terminal"></i> SELECT * FROM student_management.students WHERE studentname = 'Anika';
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>id</th><th>studentname</th><th>department</th><th>semester</th><th>marks</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>Anika</td><td>CSE</td><td>4</td><td>87</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="query-block" style="margin-top: 1.8rem;">
+                <i class="fas fa-terminal"></i> UPDATE student_management.students SET marks = 93 WHERE id = 1;
+            </div>
+            <div style="font-size: 0.95rem; color: #256b9c; margin: -0.6rem 0 1rem 0.5rem;">
+                <i class="fas fa-check-circle" style="color: #1d7e3c;"></i> Marks updated to 93 for Anika (id=1).
+            </div>
+
+            <div class="query-block">
+                <i class="fas fa-terminal"></i> DELETE FROM student_management.students WHERE id = 10;
+            </div>
+            <div style="font-size: 0.95rem; color: #256b9c; margin: -0.6rem 0 1rem 0.5rem;">
+                <i class="fas fa-user-minus" style="color: #b13e3e;"></i> Student with id=10 (Sohan) removed.
+            </div>
+
+            <div class="query-block">
+                <i class="fas fa-terminal"></i> SELECT * FROM student_management.students;
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>id</th><th>studentname</th><th>department</th><th>semester</th><th>marks</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>Anika</td><td>CSE</td><td>4</td><td class="highlight">93</td></tr>
+                        <tr><td>2</td><td>Rafi</td><td>CSE</td><td>1</td><td>72</td></tr>
+                        <tr><td>3</td><td>Tasnim</td><td>EEE</td><td>3</td><td>90</td></tr>
+                        <tr><td>4</td><td>Imran</td><td>CSE</td><td>4</td><td>83</td></tr>
+                        <tr><td>5</td><td>Lamia</td><td>BBA</td><td>2</td><td>79</td></tr>
+                        <tr><td>6</td><td>Shuvo</td><td>CSE</td><td>1</td><td>92</td></tr>
+                        <tr><td>7</td><td>Mehzabin</td><td>EEE</td><td>4</td><td>68</td></tr>
+                        <tr><td>8</td><td>Karim</td><td>BBA</td><td>3</td><td>85</td></tr>
+                        <tr><td>9</td><td>Priya</td><td>CSE</td><td>6</td><td>96</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="font-size: 0.85rem; color: #4f7192; margin-top: 0.6rem;">
+                <i class="fas fa-info-circle"></i> Sohan (id=10) deleted; Anika's marks = 93.
+            </div>
+        </div>
+
+        <!-- 3. Aggregation results: COUNT, AVG, MIN/MAX, GROUP BY -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-simple"></i>
+                <h2>3. Aggregate statistics</h2>
+            </div>
+
+            <!-- COUNT + AVG + MIN/MAX grid -->
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <span class="stat-label"><i class="fas fa-users"></i> total_students</span>
+                    <span class="stat-value">9</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label"><i class="fas fa-calculator"></i> average_marks</span>
+                    <span class="stat-value">84.22 <small>avg</small></span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label"><i class="fas fa-arrow-up"></i> highest_mark</span>
+                    <span class="stat-value">96</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label"><i class="fas fa-arrow-down"></i> lowest_marks</span>
+                    <span class="stat-value">68</span>
+                </div>
+            </div>
+
+            <!-- GROUP BY department -->
+            <div style="margin-top: 2rem;">
+                <div class="query-block">
+                    <i class="fas fa-terminal"></i> SELECT department, COUNT(*) AS total_students FROM student_management.students GROUP BY department;
+                </div>
+                <div class="table-wrapper">
+                    <table style="min-width: 300px; width: auto;">
+                        <thead>
+                            <tr><th>department</th><th>total_students</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="dept-badge">CSE</span></td><td>5</td></tr>
+                            <tr><td><span class="dept-badge">EEE</span></td><td>3</td></tr>
+                            <tr><td><span class="dept-badge">BBA</span></td><td>2</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="font-size: 0.9rem; color: #2f5e85; margin-top: 0.7rem;">
+                    <i class="fas fa-check-circle" style="color: #15803d;"></i> Department distribution after removal of id=10.
+                </div>
+            </div>
+
+            <!-- final snapshot extra -->
+            <div style="margin-top: 2.2rem;">
+                <div class="card-header" style="margin-bottom: 0.8rem; border-bottom: 1px solid #bdd4e8;">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h2 style="font-size: 1.3rem;">Final snapshot</h2>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>id</th><th>studentname</th><th>department</th><th>semester</th><th>marks</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>Anika</td><td>CSE</td><td>4</td><td>93</td></tr>
+                            <tr><td>2</td><td>Rafi</td><td>CSE</td><td>1</td><td>72</td></tr>
+                            <tr><td>3</td><td>Tasnim</td><td>EEE</td><td>3</td><td>90</td></tr>
+                            <tr><td>4</td><td>Imran</td><td>CSE</td><td>4</td><td>83</td></tr>
+                            <tr><td>5</td><td>Lamia</td><td>BBA</td><td>2</td><td>79</td></tr>
+                            <tr><td>6</td><td>Shuvo</td><td>CSE</td><td>1</td><td>92</td></tr>
+                            <tr><td>7</td><td>Mehzabin</td><td>EEE</td><td>4</td><td>68</td></tr>
+                            <tr><td>8</td><td>Karim</td><td>BBA</td><td>3</td><td>85</td></tr>
+                            <tr><td>9</td><td>Priya</td><td>CSE</td><td>6</td><td>96</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- footer info -->
+        <div class="footer-note">
+            <span><i class="fas fa-table"></i> student_management.students</span>
+            <span><i class="fas fa-check-circle" style="color: #2a8e4a;"></i> All queries executed</span>
+            <span><i class="fas fa-code-branch"></i> GitHub-ready</span>
+        </div>
+    </div>
+</body>
+</html>
